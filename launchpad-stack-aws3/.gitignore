@@ -8,6 +8,10 @@
 **/terraform.tfstate.backup
 **/terraform.tfstate.*.backup
 
+# tfvars file
+*.auto.tfvars
 my_tf.cfg
 
 launchpad.yaml
+
+**/ssh-keys/

@@ -6,3 +6,6 @@
 
 # Terraform stuff
 terraform.tfstate*
+
+# SSH-KEYS
+./ssh-keys/
