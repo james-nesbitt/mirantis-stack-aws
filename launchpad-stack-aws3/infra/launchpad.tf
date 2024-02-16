@@ -6,6 +6,15 @@ locals {
   // only hosts with these roles will be used for launchpad_yaml
   launchpad_roles = ["manager", "worker", local.launchpad_role_msr]
 
+  permissive_egress_ipv4 = {
+    description : "Permissive outgoing traffic"
+    from_port : 0
+    to_port : 0
+    protocol : "-1"
+    cidr_blocks : ["0.0.0.0/0"]
+    self : false
+  }
+
 }
 
 // Launchpad configuration
@@ -66,26 +75,66 @@ locals {
           self : true
           cidr_blocks : []
         },
-        {
-          description : "Permissive external traffic [BAD RULE]"
-          from_port : 0
-          to_port : 0
-          protocol : "-1"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        }
       ]
-      egress_ipv4 = [
-        {
-          description : "Permissive outgoing traffic"
-          from_port : 0
-          to_port : 0
-          protocol : "-1"
-          cidr_blocks : ["0.0.0.0/0"]
-          self : false
-        }
-      ]
+      egress_ipv4 = [local.permissive_egress_ipv4]
     }
+
+    "linux" = {
+      description = "Common security group for linux machines"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.platform_type == "linux"]
+      ingress_ipv4 = [
+        {
+          description : "Allow ssh traffic from anywhere"
+          from_port : 22
+          to_port : 22
+          protocol : "tcp"
+          self : false
+          cidr_blocks : ["0.0.0.0/0"]
+        },
+      ]
+      egress_ipv4 = [local.permissive_egress_ipv4]
+    }
+
+    "windows" = {
+      description = "Common security group for windows machines"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.platform_type == "windows"]
+      ingress_ipv4 = [
+        {
+          description : "Allow winrm traffic from anywhere"
+          from_port : 5985
+          to_port : 5986
+          protocol : "tcp"
+          self : false
+          cidr_blocks : ["0.0.0.0/0"]
+        },
+      ]
+      egress_ipv4 = [local.permissive_egress_ipv4]
+    }
+
+    "manager" = {
+      description = "Common security group for manager nodes"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
+      ingress_ipv4 = [
+        {
+          description : "Allow https traffic from anywhere"
+          from_port : 443
+          to_port : 443
+          protocol : "tcp"
+          self : false
+          cidr_blocks : ["0.0.0.0/0"]
+        },
+        {
+          description : "Allow https traffic from anywhere for kube api server"
+          from_port : 6443
+          to_port : 6443
+          protocol : "tcp"
+          self : false
+          cidr_blocks : ["0.0.0.0/0"]
+        },
+      ]
+      egress_ipv4 = [local.permissive_egress_ipv4]
+    }
+
   }
 
 }
