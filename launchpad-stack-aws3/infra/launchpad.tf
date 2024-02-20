@@ -14,7 +14,11 @@ locals {
     cidr_blocks : ["0.0.0.0/0"]
     self : false
   }
+}
 
+locals {
+  windows_platforms = [for p, ami in local.platforms_with_ami : p if ami.platform == "windows"]
+  linux_platforms   = [for p, ami in local.platforms_with_ami : p if ami.platform == ""]
 }
 
 // Launchpad configuration
@@ -81,7 +85,7 @@ locals {
 
     "linux" = {
       description = "Common security group for linux machines"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.platform_type == "linux"]
+      nodegroups  = [for n, ng in var.nodegroups : n if contains(local.linux_platforms, ng.platform)]
       ingress_ipv4 = [
         {
           description : "Allow ssh traffic from anywhere"
@@ -97,7 +101,7 @@ locals {
 
     "windows" = {
       description = "Common security group for windows machines"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.platform_type == "windows"]
+      nodegroups  = [for n, ng in var.nodegroups : n if contains(local.windows_platforms, ng.platform)]
       ingress_ipv4 = [
         {
           description : "Allow winrm traffic from anywhere"

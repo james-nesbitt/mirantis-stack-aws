@@ -31,14 +31,13 @@ variable "network" {
 variable "nodegroups" {
   description = "A map of machine group definitions"
   type = map(object({
-    platform      = string
-    type          = string
-    count         = number
-    volume_size   = number
-    role          = string
-    public        = bool
-    user_data     = string
-    platform_type = string
+    platform    = string
+    type        = string
+    count       = number
+    volume_size = number
+    role        = string
+    public      = bool
+    user_data   = string
   }))
 }
 
