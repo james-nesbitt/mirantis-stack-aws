@@ -45,39 +45,29 @@ locals {
 
   // standard firewall rules [here we just leave it open until we can figure this out]
   k0s_securitygroups = {
-    "permissive" = {
-      description = "Common permissive SG for all cluster machines"
-      nodegroups  = [for n, ng in var.nodegroups : n]
-
+    "controller" = {
+      description = "Common security group for controller nodes"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
       ingress_ipv4 = [
         {
-          description : "Permissive internal traffic [BAD RULE]"
-          from_port : 0
-          to_port : 0
-          protocol : "-1"
-          self : true
-          cidr_blocks : []
-        },
-        {
-          description : "Permissive external traffic [BAD RULE]"
-          from_port : 0
-          to_port : 0
-          protocol : "-1"
+          description : "Allow https traffic from anywhere"
+          from_port : 443
+          to_port : 443
+          protocol : "tcp"
           self : false
           cidr_blocks : ["0.0.0.0/0"]
         },
-      ]
-      egress_ipv4 = [
         {
-          description : "Permissive outgoing traffic"
-          from_port : 0
-          to_port : 0
-          protocol : "-1"
-          cidr_blocks : ["0.0.0.0/0"]
+          description : "Allow https traffic from anywhere for kube api server"
+          from_port : 6443
+          to_port : 6443
+          protocol : "tcp"
           self : false
-        }
+          cidr_blocks : ["0.0.0.0/0"]
+        },
       ]
     }
+
   }
 
   // This should likely be built using a template

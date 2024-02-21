@@ -34,7 +34,7 @@ module "provision" {
   ingresses = local.k0s_ingresses # see k0sctl.tf
 
   // firewall rules (should likely merge with an input to allow more flexibility
-  securitygroups = local.k0s_securitygroups # see k0sctl.tf
+  securitygroups = merge(local.k0s_securitygroups, local.common_security_groups) # see k0sctl.tf and sg.tf
 }
 
 // locals calculated after the provision module is run, but before installation using launchpad

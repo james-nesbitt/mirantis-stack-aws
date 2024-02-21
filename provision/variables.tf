@@ -67,14 +67,14 @@ variable "securitygroups" {
     description = string
     nodegroups  = list(string) # which nodegroups should get attached to the sg?
 
-    ingress_ipv4 = list(object({
+    ingress_ipv4 = optional(list(object({
       description = string
       from_port   = number
       to_port     = number
       protocol    = string
       cidr_blocks = list(string)
       self        = bool
-    }))
+    })), [])
     egress_ipv4 = optional(list(object({
       description = string
       from_port   = number

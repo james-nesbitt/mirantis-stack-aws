@@ -88,6 +88,7 @@ provider "registry.terraform.io/hashicorp/tls" {
 provider "registry.terraform.io/mirantis/k0sctl" {
   version = "0.0.2"
   hashes = [
+    "h1:4EqwBMr8OmztL7DTCAMFGRug+pYrGQQS4hdxvbKEk/o=",
     "h1:XB6Kxya3Ew2dnghu7Uzv8g9HopTfXS6kQp5aGA6rdgI=",
     "zh:16b2b739029561491e4050c773f34ec15832efc4aeaf4ea69019c6f731f5d534",
     "zh:1d17c75a556a00279fadce2a1841e03ef08c743ae523ad8442f73f1ec6621802",
