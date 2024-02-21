@@ -75,14 +75,14 @@ variable "securitygroups" {
       cidr_blocks = list(string)
       self        = bool
     }))
-    egress_ipv4 = list(object({
+    egress_ipv4 = optional(list(object({
       description = string
       from_port   = number
       to_port     = number
       protocol    = string
       cidr_blocks = list(string)
       self        = bool
-    }))
+    })), [])
   }))
   default = {}
 }

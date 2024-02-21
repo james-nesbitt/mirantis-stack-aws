@@ -6,19 +6,6 @@ locals {
   // only hosts with these roles will be used for launchpad_yaml
   launchpad_roles = ["manager", "worker", local.launchpad_role_msr]
 
-  permissive_egress_ipv4 = {
-    description : "Permissive outgoing traffic"
-    from_port : 0
-    to_port : 0
-    protocol : "-1"
-    cidr_blocks : ["0.0.0.0/0"]
-    self : false
-  }
-}
-
-locals {
-  windows_platforms = [for p, ami in local.platforms_with_ami : p if ami.platform == "windows"]
-  linux_platforms   = [for p, ami in local.platforms_with_ami : p if ami.platform == ""]
 }
 
 // Launchpad configuration
@@ -80,12 +67,21 @@ locals {
           cidr_blocks : []
         },
       ]
-      egress_ipv4 = [local.permissive_egress_ipv4]
+      egress_ipv4 = [
+        {
+          description : "Permissive outgoing traffic"
+          from_port : 0
+          to_port : 0
+          protocol : "-1"
+          cidr_blocks : ["0.0.0.0/0"]
+          self : false
+        }
+      ]
     }
 
-    "linux" = {
-      description = "Common security group for linux machines"
-      nodegroups  = [for n, ng in var.nodegroups : n if contains(local.linux_platforms, ng.platform)]
+    "ssh" = {
+      description = "Security for group for openning ssh port"
+      nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == ""] # platform attribute is empty for linux in aws_ami data source
       ingress_ipv4 = [
         {
           description : "Allow ssh traffic from anywhere"
@@ -96,12 +92,11 @@ locals {
           cidr_blocks : ["0.0.0.0/0"]
         },
       ]
-      egress_ipv4 = [local.permissive_egress_ipv4]
     }
 
-    "windows" = {
-      description = "Common security group for windows machines"
-      nodegroups  = [for n, ng in var.nodegroups : n if contains(local.windows_platforms, ng.platform)]
+    "winrm" = {
+      description = "Security for group for openning winrm ports"
+      nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == "windows"]
       ingress_ipv4 = [
         {
           description : "Allow winrm traffic from anywhere"
@@ -112,7 +107,6 @@ locals {
           cidr_blocks : ["0.0.0.0/0"]
         },
       ]
-      egress_ipv4 = [local.permissive_egress_ipv4]
     }
 
     "manager" = {
@@ -136,7 +130,6 @@ locals {
           cidr_blocks : ["0.0.0.0/0"]
         },
       ]
-      egress_ipv4 = [local.permissive_egress_ipv4]
     }
 
   }
