@@ -283,75 +283,91 @@ locals {
       "ssh_port" : 22
     },
     "rocky_8.5" : {
-      "ami_name" : "Rocky-8-ec2-8.5-202*.x86_64",
+      "ami_name" : "Rocky-8-EC2-8.5-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_8.6" : {
-      "ami_name" : "Rocky-8-ec2-8.6-202*.x86_64",
+      "ami_name" : "Rocky-8-ec2-8.6-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_8.7" : {
-      "ami_name" : "Rocky-8-EC2-8.7-202*.x86_64",
+      "ami_name" : "Rocky-8-EC2-Base-8.7-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_8.8" : {
-      "ami_name" : "Rocky-8-EC2-Base-8.8-202*.x86_64",
+      "ami_name" : "Rocky-8-EC2-Base-8.8-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
+      "ssh_port" : 22
+    },
+    "rocky_8.9" : {
+      "ami_name" : "Rocky-8-EC2-Base-8.9-*.x86_64",
+      "owner" : "792107900819",
+      "interface" : "eth0"
+      "connection" : "ssh",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_8" : {
-      "ami_name" : "Rocky-8-EC2-Base-8.8-202*.x86_64",
+      "ami_name" : "Rocky-8-EC2-Base-8.*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_9.0" : {
-      "ami_name" : "Rocky-9-EC2-9.0-202*.x86_64",
+      "ami_name" : "Rocky-9-EC2-9.0-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_9.1" : {
-      "ami_name" : "Rocky-9-EC2-Base-9.1-202*.x86_64",
+      "ami_name" : "Rocky-9-EC2-Base-9.1-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_9.2" : {
-      "ami_name" : "Rocky-9-EC2-Base-9.2-202*.x86_64",
+      "ami_name" : "Rocky-9-EC2-Base-9.2-*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
+      "ssh_port" : 22
+    },
+    "rocky_9.3" : {
+      "ami_name" : "Rocky-9-EC2-Base-9.3-*.x86_64",
+      "owner" : "792107900819",
+      "interface" : "eth0"
+      "connection" : "ssh",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "rocky_9" : {
-      "ami_name" : "Rocky-9-EC2-Base-9.2-202*.x86_64",
+      "ami_name" : "Rocky-9-EC2-Base-9.*.x86_64",
       "owner" : "792107900819",
       "interface" : "eth0"
       "connection" : "ssh",
-      "ssh_user" : "ec2-user",
+      "ssh_user" : "rocky",
       "ssh_port" : 22
     },
     "sles_12" : {
