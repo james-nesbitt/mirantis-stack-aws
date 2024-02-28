@@ -47,16 +47,8 @@ locals {
   k0s_securitygroups = {
     "controller" = {
       description = "Common security group for controller nodes"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "controller"]
       ingress_ipv4 = [
-        {
-          description : "Allow https traffic from anywhere"
-          from_port : 443
-          to_port : 443
-          protocol : "tcp"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        },
         {
           description : "Allow https traffic from anywhere for kube api server"
           from_port : 6443

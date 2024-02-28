@@ -3,7 +3,7 @@
 #
 
 module "key" {
-  source = "../../provision/modules/key/ed25519"
+  source = "terraform-mirantis-modules/provision-aws/mirantis//modules/key/ed25519"
 
   name = "${var.name}-commonkey"
   tags = local.tags

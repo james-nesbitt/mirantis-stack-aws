@@ -46,8 +46,8 @@ case $command in
 	  ;;
 esac
 
-if [ $USE_CONFIG -eq 1 -a -f "${TF_CLI_CONFIG_FILE}" ]; then
-	export TF_CLI_CONFIG_FILE=$(realpath "my_tf.cfg")
+if [ $USE_CONFIG -eq 1 -a -f "$(realpath "my_tf.cfg")" ]; then
+    export TF_CLI_CONFIG_FILE=$(realpath "my_tf.cfg")
 fi
 
 global_args="-chdir=$target"
@@ -55,7 +55,7 @@ command_args=""
 
 TF_VARS_FILE=$(realpath "${CONFIG_PATH}/${target_key}.tfvars")
 if [ $TF_USE_TFVARS -eq 1 -a -f "${TF_VARS_FILE}" ]; then
-	export command_args="${command_args} -var-file=${TF_VARS_FILE}"
+    export command_args="${command_args} -var-file=${TF_VARS_FILE}"
 fi
 
 $(which terraform) ${global_args} ${command} ${command_args} $@
