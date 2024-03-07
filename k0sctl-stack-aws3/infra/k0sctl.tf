@@ -132,6 +132,7 @@ resource "k0sctl_config" "cluster" {
         ssh {
           address  = host.value.ssh_address
           user     = host.value.ssh_user
+          port     = host.value.ssh_port
           key_path = host.value.ssh_key_path
         }
       }

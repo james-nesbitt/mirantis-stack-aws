@@ -11,7 +11,7 @@ module "platform" {
   count  = length(local.unique_used_platforms)
   source = "terraform-mirantis-modules/provision-aws/mirantis//modules/platform"
 
-  platform_key     = local.unique_used_platforms[count.index]
+  platform_key = local.unique_used_platforms[count.index]
 }
 
 // variables calculated after ami data is pulled

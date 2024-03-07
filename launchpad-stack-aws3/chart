@@ -46,8 +46,8 @@ case $command in
 	  ;;
 esac
 
-if [ $USE_CONFIG -eq 1 -a -f "$(realpath "my_tf.cfg")" ]; then
-    export TF_CLI_CONFIG_FILE=$(realpath "my_tf.cfg")
+if [ $USE_CONFIG -eq 1 -a -f "my_tf.cfg" ]; then
+    export TF_CLI_CONFIG_FILE="my_tf.cfg"
 fi
 
 global_args="-chdir=$target"
