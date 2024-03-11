@@ -115,10 +115,60 @@ locals {
   has_msr = sum(concat([0], [for k, ng in local.nodegroups : ng.count if ng.role == local.launchpad_role_msr])) > 0
 }
 
-// ------- Ye old launchpad yaml (just for debugging)
+resource "launchpad_config" "cluster" {
+  skip_create  = var.launchpad.skip_create
+  skip_destroy = var.launchpad.skip_destroy
 
-locals {
-  launchpad_yaml_14 = <<-EOT
+  metadata {
+    name = var.name
+  }
+  spec {
+    mcr {
+      version = var.launchpad.mcr_version
+    }
+    mke {
+      version        = var.launchpad.mke_version
+      admin_password = var.launchpad.mke_connect.password
+      install_flags  = []
+    }
+
+    // add hosts for every *nix/ssh host 
+    dynamic "host" {
+      for_each = nonsensitive(local.launchpad_hosts_ssh)
+
+      content {
+        role = host.value.role
+        ssh {
+          address  = host.value.ssh_address
+          key_path = host.value.ssh_key_path
+          user     = host.value.ssh_user
+        }
+      }
+    }
+
+    // add hosts for every windows/winrm host
+    dynamic "host" {
+      for_each = nonsensitive(local.launchpad_hosts_winrm)
+
+      content {
+        role = host.value.role
+        winrm {
+          address   = host.value.winrm_address
+          user      = host.value.winrm_user
+          password  = host.value.winrm_password
+          insecure  = host.value.winrm_insecure
+          use_https = host.value.winrm_useHTTPS
+        }
+      }
+    }
+  }
+}
+
+// ------- Ye old launchpad yaml (just for debugging)
+output "launchpad_yaml" {
+  description = "launchpad config file yaml (for debugging)"
+  sensitive   = true
+  value       = <<-EOT
 apiVersion: launchpad.mirantis.com/mke/v1.4
 kind: mke%{if local.has_msr}+msr%{endif}
 metadata:
@@ -152,7 +202,6 @@ spec:
     adminPassword: ${var.launchpad.mke_connect.password}
     installFlags: 
     - "--san=${local.MKE_URL}"
-    - "--default-node-orchestrator=kubernetes"
     - "--nodeport-range=32768-35535"
     upgradeFlags:
     - "--force-recent-backup"
@@ -170,12 +219,6 @@ spec:
 %{endif}
 EOT
 
-}
-
-output "launchpad_yaml" {
-  description = "launchpad config file yaml (for debugging)"
-  sensitive   = true
-  value       = local.launchpad_yaml_14
 }
 
 output "mke_connect" {
