@@ -129,7 +129,9 @@ resource "launchpad_config" "cluster" {
     mke {
       version        = var.launchpad.mke_version
       admin_password = var.launchpad.mke_connect.password
-      install_flags  = []
+      install_flags = [
+        "--san=${local.MKE_URL}"
+      ]
     }
 
     // add hosts for every *nix/ssh host 
@@ -219,15 +221,4 @@ spec:
 %{endif}
 EOT
 
-}
-
-output "mke_connect" {
-  description = "Connection information for connecting to MKE"
-  sensitive   = true
-  value = {
-    host     = local.MKE_URL
-    username = var.launchpad.mke_connect.username
-    password = var.launchpad.mke_connect.password
-    insecure = var.launchpad.mke_connect.insecure
-  }
 }
