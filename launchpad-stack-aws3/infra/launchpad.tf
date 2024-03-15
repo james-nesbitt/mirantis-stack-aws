@@ -57,6 +57,7 @@ locals {
     "manager" = {
       description = "Common security group for manager nodes"
       nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
+
       ingress_ipv4 = [
         {
           description : "Allow https traffic from anywhere"

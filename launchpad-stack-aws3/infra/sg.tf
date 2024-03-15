@@ -3,6 +3,7 @@ locals {
     "permissive" = {
       description = "Common SG for all cluster machines"
       nodegroups  = [for n, ng in var.nodegroups : n]
+
       ingress_ipv4 = [
         {
           description : "Permissive internal traffic [BAD RULE]"
@@ -28,6 +29,7 @@ locals {
     "ssh" = {
       description = "Security for group for openning ssh port"
       nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == ""] # platform attribute is empty for linux in aws_ami data source
+
       ingress_ipv4 = [
         {
           description : "Allow ssh traffic from anywhere"
@@ -43,6 +45,7 @@ locals {
     "winrm" = {
       description = "Security for group for openning winrm ports"
       nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == "windows"]
+
       ingress_ipv4 = [
         {
           description : "Allow winrm traffic from anywhere"
