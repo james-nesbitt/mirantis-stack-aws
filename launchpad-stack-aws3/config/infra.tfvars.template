@@ -6,20 +6,20 @@ aws = {
 }
 
 launchpad = {
-  drain = false
+  drain = true
 
-  mcr_version = "23.0"
-  mke_version = "3.7.3"
-  msr_version = ""
+  mcr_version = "23.0.9"
+  mke_version = "3.7.5"
+  msr_version = "2.9.16"
 
   mke_connect = {
     username = "admin"
-    password = ""
-    insecure = false
+    //password = "" put a password here
+    insecure = true // insecure if MKE UI TLS uses a self-signed cert
   }
 
-  skip_create  = false
-  skip_destroy = true  // don't bother running launchpad reset
+  skip_create  = false // (optional) skip the TF Launchpad installer (use the yaml output instead)
+  skip_destroy = true  // (optional) skip the TF Launchpad reset/uninstall (if you will just delete the cluster, no need to uninstall)
 }
 
 // configure the network stack
@@ -31,22 +31,40 @@ network = {
 
 // one definition for each group of machines to include in the stack
 nodegroups = {
-  "ACon" = { // managers for A group
+  "Man_Ubu22" = { // group of Ubuntu 22 managers
     platform    = "ubuntu_22.04"
-    count       = 1
+    count       = 3
     type        = "m6a.2xlarge"
     volume_size = 100
     role        = "manager"
     public      = true
     user_data   = ""
   },
-  "AWrk_Ubu22" = { // workers for A group
+  "Wrk_Ubu22" = { // group of Ubuntu 22 workers
     platform    = "ubuntu_22.04"
-    count       = 1
+    count       = 3
     type        = "c6a.xlarge"
     volume_size = 100
     public      = true
     role        = "worker"
+    user_data   = ""
+  },
+  "Wrk_Win22" = { // group of Windows 2022 workers
+    platform    = "windows_2022"
+    count       = 3
+    type        = "c6a.xlarge"
+    volume_size = 100
+    public      = true
+    role        = "worker"
+    user_data   = ""
+  },
+  "MSR_Ubu22" = { // group of msr nodes on Ubuntu 22
+    platform    = "ubuntu_22.04"
+    count       = 3
+    type        = "c6a.xlarge"
+    volume_size = 100
+    public      = true
+    role        = "msr"
     user_data   = ""
   }
 }
