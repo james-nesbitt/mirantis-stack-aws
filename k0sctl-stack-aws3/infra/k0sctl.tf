@@ -6,61 +6,8 @@ locals {
 
 }
 
-variable "k0sctl" {
-  description = "K0sctl install configuration"
-  type = object({
-    version = string
-
-    no_wait  = bool
-    no_drain = bool
-
-    force = bool
-
-    disable_downgrade_check = bool
-
-    restore_from = string
-
-    skip_create  = bool
-    skip_destroy = bool
-  })
-}
-
 // locals calculated before the provision run
 locals {
-  // standard MKE ingresses
-  k0s_ingresses = {
-    "kube" = {
-      description = "ingress for Kube API"
-      nodegroups  = [for k, ng in var.nodegroups : k if ng.role == "controller"]
-
-      routes = {
-        "kube" = {
-          port_incoming = 6443
-          port_target   = 6443
-          protocol      = "TCP"
-        }
-      }
-    }
-  }
-
-  // standard firewall rules [here we just leave it open until we can figure this out]
-  k0s_securitygroups = {
-    "controller" = {
-      description = "Common security group for controller nodes"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "controller"]
-      ingress_ipv4 = [
-        {
-          description : "Allow https traffic from anywhere for kube api server"
-          from_port : 6443
-          to_port : 6443
-          protocol : "tcp"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        },
-      ]
-    }
-
-  }
 
   // This should likely be built using a template
   k0s_config = <<EOT
@@ -87,12 +34,11 @@ spec:
       kubeSchedulerUser: kube-scheduler
 EOT
 
-
   // The SAN URL for the kubernetes load balancer ingress that is for the MKE load balancer
-  KUBE_URL = module.provision.ingresses["kube"].lb_dns
+  KUBE_URL = module.cluster.ingresses["kube"].lb_dns
 
   // flatten nodegroups into a set of objects with the info needed for each node, by combining the group details with the node detains
-  hosts_ssh = tolist(concat([for k, ng in local.nodegroups : [for l, ngn in ng.nodes : {
+  hosts_ssh = tolist(concat([for k, ng in module.cluster.nodegroups : [for l, ngn in ng.nodes : {
     label : ngn.label
     role : ng.role
 
@@ -101,16 +47,10 @@ EOT
     ssh_address : ngn.public_ip
     ssh_user : ng.ssh_user
     ssh_port : ng.ssh_port
-    ssh_key_path : abspath(local_sensitive_file.ssh_private_key.filename)
+    ssh_key_path : abspath(module.cluster.key.filename)
   } if contains(local.k0s_roles, ng.role) && ng.connection == "ssh"]]...))
 
 }
-
-output "hosts_ssh" {
-  value     = local.hosts_ssh
-  sensitive = true
-}
-
 
 // launchpad install from provisioned cluster
 resource "k0sctl_config" "cluster" {
@@ -145,28 +85,4 @@ resource "k0sctl_config" "cluster" {
     } // k0s
 
   } // spec
-}
-
-output "kube_connect" {
-  description = "parametrized config for kubernetes/helm provider configuration"
-  sensitive   = true
-  value = {
-    host               = k0sctl_config.cluster.kube_host
-    client_certificate = k0sctl_config.cluster.client_cert
-    client_key         = k0sctl_config.cluster.private_key
-    ca_certificate     = k0sctl_config.cluster.ca_cert
-    tlsverifydisable   = k0sctl_config.cluster.kube_skiptlsverify
-  }
-}
-
-output "kube_yaml" {
-  description = "kubernetes config file yaml (for debugging)"
-  sensitive   = true
-  value       = k0sctl_config.cluster.kube_yaml
-}
-
-output "k0sctl_yaml" {
-  description = "k0sctl config file yaml (for debugging)"
-  sensitive   = true
-  value       = k0sctl_config.cluster.k0s_yaml
 }

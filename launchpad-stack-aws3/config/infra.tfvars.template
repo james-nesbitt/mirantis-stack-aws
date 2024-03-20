@@ -24,48 +24,35 @@ launchpad = {
 
 // configure the network stack
 network = {
-  cidr                 = "172.31.0.0/16"
-  public_subnet_count  = 3
-  private_subnet_count = 0 // if 0 then no private nodegroups allowed
+  cidr                = "172.31.0.0/16"
+  public_subnet_count = 3
 }
 
 // one definition for each group of machines to include in the stack
 nodegroups = {
   "Man_Ubu22" = { // group of Ubuntu 22 managers
-    platform    = "ubuntu_22.04"
-    count       = 3
-    type        = "m6a.2xlarge"
-    volume_size = 100
-    role        = "manager"
-    public      = true
-    user_data   = ""
+    platform = "ubuntu_22.04"
+    count    = 3
+    type     = "m6a.2xlarge"
+    role     = "manager"
   },
   "Wrk_Ubu22" = { // group of Ubuntu 22 workers
-    platform    = "ubuntu_22.04"
-    count       = 3
-    type        = "c6a.xlarge"
-    volume_size = 100
-    public      = true
-    role        = "worker"
-    user_data   = ""
+    platform = "ubuntu_22.04"
+    count    = 3
+    type     = "c6a.xlarge"
+    role     = "worker"
   },
   "Wrk_Win22" = { // group of Windows 2022 workers
-    platform    = "windows_2022"
-    count       = 3
-    type        = "c6a.xlarge"
-    volume_size = 100
-    public      = true
-    role        = "worker"
-    user_data   = ""
+    platform = "windows_2022"
+    count    = 3
+    type     = "c6a.xlarge"
+    role     = "worker"
   },
   "MSR_Ubu22" = { // group of msr nodes on Ubuntu 22
-    platform    = "ubuntu_22.04"
-    count       = 3
-    type        = "c6a.xlarge"
-    volume_size = 100
-    public      = true
-    role        = "msr"
-    user_data   = ""
+    platform = "ubuntu_22.04"
+    count    = 3
+    type     = "c6a.xlarge"
+    role     = "msr"
   }
 }
 

@@ -1,10 +1,4 @@
-# Infrastructure provision and install
+# K0s cluster
 
-
-## Provisioning
-
-
-## Distribution installation
-
-### K0s
-
+Provision a cluster and install k0s using the k0sctl terraform
+provider.

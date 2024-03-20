@@ -1,141 +1,13 @@
-// constants
-locals {
-
-  // role for MSR machines, so that we can detect if msr config is needed
-  launchpad_role_msr = "msr"
-  // only hosts with these roles will be used for launchpad_yaml
-  launchpad_roles = ["manager", "worker", local.launchpad_role_msr]
-
-}
-
-// Launchpad configuration
-variable "launchpad" {
-  description = "launchpad install configuration"
-  type = object({
-    drain = bool
-
-    mcr_version = string
-    mke_version = string
-    msr_version = string // unused if you have no MSR hosts
-
-    mke_connect = object({
-      username = string
-      password = string
-      insecure = bool // true if this endpoint will not use a valid certificate
-    })
-
-    skip_create  = bool
-    skip_destroy = bool
-  })
-}
-
-// locals calculated before the provision run
-locals {
-  // decide if we need msr configuration (the [0] is needed to prevent an error of no msr instances exit)
-  has_msr = sum(concat([0], [for k, ng in var.nodegroups : ng.count if ng.role == local.launchpad_role_msr])) > 0
-
-  // standard MKE ingresses for the UI, and the kube API
-  mke_ingresses = {
-    "mke" = {
-      description = "MKE ingress for UI and Kube"
-      nodegroups  = [for k, ng in var.nodegroups : k if ng.role == "manager"]
-
-      routes = {
-        "mke" = {
-          port_incoming = 443
-          port_target   = 443
-          protocol      = "TCP"
-        }
-        "kube" = {
-          port_incoming = 6443
-          port_target   = 6443
-          protocol      = "TCP"
-        }
-      }
-    },
-  }
-  // standard MCR/MKE/MSR firewall rules [here we just leave it open until we can figure this out]
-  mke_securitygroups = {
-    "manager" = {
-      description = "Common security group for manager nodes"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
-
-      ingress_ipv4 = [
-        {
-          description : "Allow https traffic from anywhere"
-          from_port : 443
-          to_port : 443
-          protocol : "tcp"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        },
-        {
-          description : "Allow https traffic from anywhere for kube api server"
-          from_port : 6443
-          to_port : 6443
-          protocol : "tcp"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        },
-      ]
-    }
-  }
-
-  // standard MSR ingresses for the UI, and the kube API
-  msr_ingresses = {
-    // standard ingress for MSR UI
-    "msr" = {
-      description = "MSR ingress for UI"
-      nodegroups  = [for k, ng in var.nodegroups : k if ng.role == local.launchpad_role_msr]
-
-      routes = {
-        "ui-http" = {
-          port_incoming = 80
-          port_target   = 80
-          protocol      = "TCP"
-        }
-        "ui-https" = {
-          port_incoming = 443
-          port_target   = 443
-          protocol      = "TCP"
-        }
-      }
-    }
-  }
-  // standard MSR firewall rules [here we just leave it open until we can figure this out]
-  msr_securitygroups = {
-    "msr" = {
-      description = "Common security group for msr nodes"
-      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == local.launchpad_role_msr]
-
-      ingress_ipv4 = [
-        {
-          description : "Allow permissive traffic from anywhere (BAD RULE)"
-          from_port : 0
-          to_port : 0
-          protocol : "tcp"
-          self : false
-          cidr_blocks : ["0.0.0.0/0"]
-        },
-      ]
-    }
-  }
-
-  // collect all launchpad related ingresses, depending on whether or not msr is included
-  launchpad_ingresses = merge(local.mke_ingresses, local.has_msr ? local.msr_ingresses : {})
-  // collect all launchpad related SGs, depending on whether or not msr is included
-  launchpad_securitygroups = merge(local.mke_securitygroups, local.has_msr ? local.msr_securitygroups : {})
-}
 
 // prepare values to make it easier to feed into launchpad
 locals {
-  // The SAN URL for the MKE load balancer ingress that is for the MKE load balancer
-  MKE_URL = module.provision.ingresses["mke"].lb_dns
-  // The SAN URL for the MKE load balancer ingress that is for the MKE load balancer
-  MSR_URL = module.provision.ingresses["msr"].lb_dns
+  // The SAN URL for the MKE load balancer ingress
+  MKE_URL = module.cluster.ingresses["mke"].lb_dns
+  // The SAN URL for the MSR load balancer ingress 
+  MSR_URL = local.has_msr ? module.cluster.ingresses["msr"].lb_dns : ""
 
   // flatten nodegroups into a set of objects with the info needed for each node, by combining the group details with the node detains
-  launchpad_hosts_ssh = merge([for k, ng in local.nodegroups : { for l, ngn in ng.nodes : ngn.label => {
+  launchpad_hosts_ssh = merge([for k, ng in module.cluster.nodegroups : { for l, ngn in ng.nodes : ngn.label => {
     label : ngn.label
     id : ngn.instance_id
     role : ng.role
@@ -145,9 +17,9 @@ locals {
     ssh_address : ngn.public_ip
     ssh_user : ng.ssh_user
     ssh_port : ng.ssh_port
-    ssh_key_path : abspath(local_sensitive_file.ssh_private_key.filename)
+    ssh_key_path : abspath(module.cluster.key.filename)
   } if contains(local.launchpad_roles, ng.role) && ng.connection == "ssh" }]...)
-  launchpad_hosts_winrm = merge([for k, ng in local.nodegroups : { for l, ngn in ng.nodes : ngn.label => {
+  launchpad_hosts_winrm = merge([for k, ng in module.cluster.nodegroups : { for l, ngn in ng.nodes : ngn.label => {
     label : ngn.label
     id : ngn.instance_id
     role : ng.role
@@ -241,11 +113,9 @@ resource "launchpad_config" "cluster" {
   }
 }
 
-// ------- Ye old launchpad yaml (just for debugging)
-output "launchpad_yaml" {
-  description = "launchpad config file yaml (for debugging)"
-  sensitive   = true
-  value       = <<-EOT
+locals {
+  // ------- Ye old launchpad yaml (just for debugging)
+  launchpad_yaml = <<-EOT
 apiVersion: launchpad.mirantis.com/mke/v1.4
 kind: mke%{if local.has_msr}+msr%{endif}
 metadata:
@@ -294,15 +164,4 @@ spec:
 %{endif}
 EOT
 
-}
-
-output "mke_connect" {
-  description = "Connection information for connecting to MKE"
-  sensitive   = true
-  value = {
-    host     = local.MKE_URL
-    username = var.launchpad.mke_connect.username
-    password = var.launchpad.mke_connect.password
-    insecure = var.launchpad.mke_connect.insecure
-  }
 }

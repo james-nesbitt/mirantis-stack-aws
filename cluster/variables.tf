@@ -4,18 +4,6 @@ variable "name" {
   type        = string
 }
 
-# === AWS specific configuration ===
-
-variable "aws" {
-  description = "AWS configuration"
-  type = object({
-    region = string
-  })
-  default = {
-    region = "us-east-1"
-  }
-}
-
 # ===  Networking ===
 
 variable "network" {
@@ -104,32 +92,10 @@ variable "ingresses" {
   default = {}
 }
 
-# === Launchpad configuration ===
-
-variable "launchpad" {
-  description = "launchpad install configuration"
-  type = object({
-    drain = bool
-
-    mcr_version = string
-    mke_version = string
-    msr_version = string // unused if you have no MSR hosts
-
-    mke_connect = object({
-      username = string
-      password = string
-      insecure = bool // true if this endpoint will not use a valid certificate
-    })
-
-    skip_create  = bool
-    skip_destroy = bool
-  })
-}
-
-# === Common tags ===
+# === Shared variables ===
 
 variable "extra_tags" {
-  description = "Extra tags that will be added to all provisioned resources, where possible."
+  description = "Additional tags that will be added to all provisioned resources, where possible."
   type        = map(string)
   default     = {}
 }
