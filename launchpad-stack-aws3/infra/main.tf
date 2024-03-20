@@ -1,21 +1,12 @@
 
-resource "time_static" "now" {}
-
-# get our (client) id
-data "aws_caller_identity" "current" {}
-
 locals {
 
-  // build some tags for all things
-  tags = merge(
-    { # excludes kube-specific tags
-      "stack"      = var.name
-      "created"    = time_static.now.rfc3339
-      "expire"     = timeadd(time_static.now.rfc3339, "72h")
-      "user_id"    = data.aws_caller_identity.current.user_id
-      "account_id" = data.aws_caller_identity.current.account_id
-    },
-    var.extra_tags
-  )
+  // role for MSR machines, so that we can detect if msr config is needed
+  launchpad_role_msr = "msr"
+  // only hosts with these roles will be used for launchpad_yaml
+  launchpad_roles = ["manager", "worker", local.launchpad_role_msr]
+
+  // decide if we need msr configuration (the [0] is needed to prevent an error of no msr instances exit)
+  has_msr = sum(concat([0], [for k, ng in var.nodegroups : ng.count if ng.role == local.launchpad_role_msr])) > 0
 
 }

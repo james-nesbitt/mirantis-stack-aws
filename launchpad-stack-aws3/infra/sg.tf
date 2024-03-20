@@ -1,4 +1,5 @@
 locals {
+
   common_security_groups = {
     "permissive" = {
       description = "Common SG for all cluster machines"
@@ -26,31 +27,27 @@ locals {
       ]
     }
 
-    "ssh" = {
-      description = "Security for group for openning ssh port"
-      nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == ""] # platform attribute is empty for linux in aws_ami data source
+  }
+
+  // standard MCR/MKE/MSR firewall rules [here we just leave it open until we can figure this out]
+  mke_securitygroups = {
+    "manager" = {
+      description = "Common security group for manager nodes"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == "manager"]
 
       ingress_ipv4 = [
         {
-          description : "Allow ssh traffic from anywhere"
-          from_port : 22
-          to_port : 22
+          description : "Allow https traffic from anywhere"
+          from_port : 443
+          to_port : 443
           protocol : "tcp"
           self : false
           cidr_blocks : ["0.0.0.0/0"]
         },
-      ]
-    }
-
-    "winrm" = {
-      description = "Security for group for openning winrm ports"
-      nodegroups  = [for n, ng in local.nodegroups_wplatform : n if ng.platform == "windows"]
-
-      ingress_ipv4 = [
         {
-          description : "Allow winrm traffic from anywhere"
-          from_port : 5985
-          to_port : 5986
+          description : "Allow https traffic from anywhere for kube api server"
+          from_port : 6443
+          to_port : 6443
           protocol : "tcp"
           self : false
           cidr_blocks : ["0.0.0.0/0"]
@@ -58,4 +55,24 @@ locals {
       ]
     }
   }
+
+  // standard MSR firewall rules [here we just leave it open until we can figure this out]
+  msr_securitygroups = {
+    "msr" = {
+      description = "Common security group for msr nodes"
+      nodegroups  = [for n, ng in var.nodegroups : n if ng.role == local.launchpad_role_msr]
+
+      ingress_ipv4 = [
+        {
+          description : "Allow permissive traffic from anywhere (BAD RULE)"
+          from_port : 0
+          to_port : 0
+          protocol : "tcp"
+          self : false
+          cidr_blocks : ["0.0.0.0/0"]
+        },
+      ]
+    }
+  }
+
 }

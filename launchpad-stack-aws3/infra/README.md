@@ -1,10 +1,4 @@
-# Infrastructure provision and install
+# launchpad cluster
 
-
-## Provisioning
-
-
-## Distribution installation
-
-### Launchpad
-
+Provision a cluster and install MCR/MKE/MSR using the launchpad terraform
+provider.

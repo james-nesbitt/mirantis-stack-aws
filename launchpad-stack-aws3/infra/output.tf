@@ -1,17 +1,29 @@
 
-output "nodes" {
+output "nodegroups" {
   description = "Nodegroups with node lists"
-  value       = local.nodegroups
+  value       = module.cluster.nodegroups
   sensitive   = true
 }
 
 output "ingresses" {
   description = "Ingresses with dns information"
-  value       = local.ingresses
+  value       = module.cluster.ingresses
 }
 
-output "platforms" {
-  description = "Platforms used in the stack"
-  value       = local.platforms_with_ami
+output "mke_connect" {
+  description = "Connection information for connecting to MKE"
   sensitive   = true
+  value = {
+    host     = local.MKE_URL
+    username = var.launchpad.mke_connect.username
+    password = var.launchpad.mke_connect.password
+    insecure = var.launchpad.mke_connect.insecure
+  }
+}
+
+// ------- Ye old launchpad yaml (just for debugging)
+output "launchpad_yaml" {
+  description = "launchpad config file yaml (for debugging)"
+  sensitive   = true
+  value       = local.launchpad_yaml
 }

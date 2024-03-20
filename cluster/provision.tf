@@ -10,8 +10,6 @@ module "provision" {
 
   name = var.name
 
-  common_tags = local.tags
-
   network = {
     cidr                 = var.network.cidr
     public_subnet_count  = 1
@@ -33,16 +31,24 @@ module "provision" {
     user_data : ngd.user_data
   } }
 
-  // ingress/lb (should likely merge with an input to allow more flexibility
-  ingresses = local.launchpad_ingresses # see launchpad.tf
+  // ingress/lb 
+  ingresses = var.ingresses
 
-  // firewall rules (should likely merge with an input to allow more flexibility
-  securitygroups = merge(local.launchpad_securitygroups, local.common_security_groups) # see launchpad.tf and sg.tf
+  // firewall rules 
+  securitygroups = merge(
+    local.common_security_groups,
+    var.securitygroups,
+  )
+
+  common_tags = merge(
+    local.management_tags,
+    var.extra_tags,
+  )
 }
 
 // locals calculated after the provision module is run, but before installation using launchpad
 locals {
   // combine each node-group & platform definition with the provisioned nodes
-  nodegroups = { for k, ngp in local.nodegroups_wplatform : k => merge({ "name" : k }, ngp, module.provision.nodegroups[k]) }
-  ingresses  = { for k, i in local.launchpad_ingresses : k => merge({ "name" : k }, i, module.provision.ingresses[k]) }
+  nodegroups_wnodes = { for k, ngp in local.nodegroups_wplatform : k => merge({ "name" : k }, ngp, module.provision.nodegroups[k]) }
+  ingresses_wlbs    = { for k, i in var.ingresses : k => merge({ "name" : k }, i, module.provision.ingresses[k]) }
 }
